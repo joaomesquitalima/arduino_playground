@@ -1,0 +1,44 @@
+#include <WiFi.h>
+#include <WebServer.h>
+
+const char* ssid = "Araujo";      // Coloque o SSID da sua rede Wi-Fi
+const char* password = "97821306"; // Coloque a senha da sua rede Wi-Fi
+
+WebServer server(5000);
+const int ledPin = 23; 
+
+void setup() {
+    Serial.begin(115200);
+    pinMode(ledPin, OUTPUT);
+    digitalWrite(ledPin, LOW); 
+
+    // Conecta-se à rede Wi-Fi
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+    Serial.println("Conectado ao Wi-Fi!");
+    Serial.print("IP do ESP32: ");
+    Serial.println(WiFi.localIP());
+
+    // Definindo a rota para acender o LED
+    server.on("/turn_on", []() {
+        digitalWrite(ledPin, HIGH); 
+        server.send(200, "text/plain", "LED ligado"); 
+        Serial.println("LED aceso!"); 
+    });
+
+    // Definindo a rota para apagar o LED (opcional)
+    server.on("/turn_off", []() {
+        digitalWrite(ledPin, LOW); 
+        server.send(200, "text/plain", "LED desligado"); 
+        Serial.println("LED apagado!"); 
+    });
+
+    server.begin();
+}
+
+void loop() {
+    server.handleClient(); // Escuta as requisições dos clientes
+}
